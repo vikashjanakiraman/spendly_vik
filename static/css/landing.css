@@ -242,3 +242,84 @@
         padding: 1.25rem 1rem;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Video Modal                                                        */
+/* ------------------------------------------------------------------ */
+
+.video-modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 15, 15, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.video-modal-backdrop.is-open {
+    display: flex;
+}
+
+.video-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 840px;
+    background: #000000;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+.video-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 1.5rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.video-modal-close:hover {
+    background: rgba(0, 0, 0, 0.95);
+    transform: scale(1.08);
+}
+
+.video-modal-body {
+    position: relative;
+    width: 100%;
+}
+
+.video-responsive-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-responsive-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}

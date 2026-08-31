@@ -21,7 +21,7 @@
     </p>
     <div class="hero-actions">
         <a href="{{ url_for('register') }}" class="btn-hero-primary">Create free account</a>
-        <a href="{{ url_for('register') }}" class="btn-hero-secondary">See how it works</a>
+        <button type="button" class="btn-hero-secondary" id="btnSeeHowItWorks">See how it works</button>
     </div>
 
     <div class="hero-preview-window">
@@ -98,4 +98,75 @@
     </div>
 </section>
 
+<!-- YouTube Video Modal -->
+<div id="videoModal" class="video-modal-backdrop" aria-hidden="true" role="dialog">
+    <div class="video-modal-dialog">
+        <button type="button" class="video-modal-close" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+        <div class="video-modal-body">
+            <div class="video-responsive-wrapper">
+                <iframe id="videoIframe"
+                        src=""
+                        data-src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"
+                        title="Spendly Demo Video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        const modal = document.getElementById('videoModal');
+        const openBtn = document.getElementById('btnSeeHowItWorks');
+        const closeBtn = document.getElementById('modalCloseBtn');
+        const iframe = document.getElementById('videoIframe');
+
+        function openModal() {
+            if (!modal || !iframe) return;
+            const videoSrc = iframe.getAttribute('data-src');
+            iframe.setAttribute('src', videoSrc);
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            if (!modal || !iframe) return;
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            iframe.setAttribute('src', '');
+            document.body.style.overflow = '';
+        }
+
+        if (openBtn) {
+            openBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                openModal();
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal && modal.classList.contains('is-open')) {
+                closeModal();
+            }
+        });
+    })();
+</script>
 {% endblock %}
