@@ -1,0 +1,244 @@
+/* ------------------------------------------------------------------ */
+/* Spendly Hero Section Redesign                                      */
+/* ------------------------------------------------------------------ */
+
+.hero {
+    padding: 4.5rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #ebf6ee;
+    color: #387a58;
+    border: 1px solid #d4eedb;
+    padding: 0.4rem 1.1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.badge-dot {
+    font-size: 1.1rem;
+    line-height: 1;
+    color: #387a58;
+}
+
+.hero-title {
+    font-family: var(--font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: clamp(2.5rem, 5.5vw, 4.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: #191c1f;
+    margin-bottom: 1.25rem;
+}
+
+.hero-title-accent {
+    color: #387a58;
+    display: inline-block;
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: #555e68;
+    max-width: 640px;
+    line-height: 1.6;
+    margin: 0 auto 2.25rem;
+}
+
+.hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-hero-primary,
+.btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.75rem;
+    border-radius: 12px;
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background-color: #121316;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.1s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-hero-primary:hover,
+.btn-hero-secondary:hover {
+    background-color: #2a2c33;
+    color: #ffffff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero Preview Mockup Window                                          */
+/* ------------------------------------------------------------------ */
+
+.hero-preview-window {
+    background: #f7f7f6;
+    border: 1px solid #e7e6e2;
+    border-radius: 20px;
+    padding: 1.75rem 2rem;
+    width: 100%;
+    max-width: 820px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+    text-align: left;
+}
+
+.window-controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 1.5rem;
+}
+
+.window-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot-red {
+    background-color: #e58b88;
+}
+
+.dot-yellow {
+    background-color: #e5c07b;
+}
+
+.dot-green {
+    background-color: #a3cfbb;
+}
+
+.preview-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.metric-card {
+    background: #ffffff;
+    border: 1px solid #e8e7e3;
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.metric-label {
+    font-size: 0.825rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.metric-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+}
+
+.metric-trend {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.trend-negative {
+    color: #d9534f;
+}
+
+.trend-positive {
+    color: #387a58;
+}
+
+.trend-neutral {
+    color: #9ca3af;
+}
+
+.preview-breakdown-card {
+    background: #ffffff;
+    border: 1px solid #e8e7e3;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.breakdown-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.breakdown-category {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.breakdown-track {
+    height: 10px;
+    background: #f1f0eb;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+.fill-food {
+    background: #d9822b;
+}
+
+.fill-travel {
+    background: #3b76cc;
+}
+
+.fill-bills {
+    background: #6a64cc;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 3rem 1rem 3.5rem;
+    }
+
+    .preview-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-preview-window {
+        padding: 1.25rem 1rem;
+    }
+}
