@@ -1,7 +1,10 @@
-from flask import Flask, render_template
-from database.db import init_app
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash
+from werkzeug.security import generate_password_hash
+from database.db import init_app, get_db
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-spendly-2026")
 init_app(app)
 
 
@@ -14,8 +17,42 @@ def landing():
     return render_template("landing.html")
 
 
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        error = None
+
+        if not name:
+            error = "Full name is required."
+        elif not email or "@" not in email:
+            error = "A valid email address is required."
+        elif not password:
+            error = "Password is required."
+        elif len(password) < 8:
+            error = "Password must be at least 8 characters long."
+        else:
+            db = get_db()
+            existing_user = db.execute(
+                "SELECT id FROM users WHERE email = ?", (email,)
+            ).fetchone()
+
+            if existing_user is not None:
+                error = "An account with this email already exists."
+            else:
+                password_hash = generate_password_hash(password)
+                db.execute(
+                    "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+                    (name, email, password_hash),
+                )
+                db.commit()
+                return redirect(url_for("login"))
+
+        return render_template("register.html", error=error, name=name, email=email)
+
     return render_template("register.html")
 
 
