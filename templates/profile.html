@@ -14,12 +14,26 @@
             <div class="profile-header-info">
                 <h1 class="profile-name">{{ user.name }}</h1>
                 <p class="profile-email">{{ user.email }}</p>
-                <span class="profile-badge">Member since {{ user.created_at | date_format }}</span>
+                <div class="profile-badges-row">
+                    <span class="profile-badge">Member since {{ user.created_at | date_format }}</span>
+                    {% if subscription %}
+                        <span class="profile-badge badge-pro">⭐ Spendly Pro ({{ subscription.plan_id | capitalize }})</span>
+                    {% else %}
+                        <span class="profile-badge badge-free">Free Plan • <a href="{{ url_for('pricing') }}" class="badge-upgrade-link">Upgrade to Pro</a></span>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <!-- Account Statistics -->
-        <div class="profile-stats-grid">
+        <!-- Expense Summary Stat Cards -->
+        <div class="profile-stats-grid-4">
+            <div class="stat-card">
+                <span class="stat-icon">💰</span>
+                <div class="stat-details">
+                    <p class="stat-label">Total Spent</p>
+                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.total_amount) if stats and stats.total_amount else "0.00" }}</h3>
+                </div>
+            </div>
             <div class="stat-card">
                 <span class="stat-icon">📊</span>
                 <div class="stat-details">
@@ -28,15 +42,111 @@
                 </div>
             </div>
             <div class="stat-card">
-                <span class="stat-icon">💰</span>
+                <span class="stat-icon">{{ top_category.icon if top_category else '🏷️' }}</span>
                 <div class="stat-details">
-                    <p class="stat-label">Total Spent</p>
-                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.total_amount) if stats and stats.total_amount else "0.00" }}</h3>
+                    <p class="stat-label">Top Category</p>
+                    <h3 class="stat-value font-compact">{{ top_category.name if top_category else 'None yet' }}</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">📈</span>
+                <div class="stat-details">
+                    <p class="stat-label">Average / Expense</p>
+                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.avg_amount) if stats and stats.avg_amount else "0.00" }}</h3>
                 </div>
             </div>
         </div>
 
-        <!-- Edit Profile & Password Forms Grid -->
+        <!-- Expense Analytics & Recent Activity Grid -->
+        <div class="profile-grid">
+
+            <!-- Category Spending Breakdown Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">Spending by Category</h2>
+                    <p class="profile-card-subtitle">Distribution of your expenses across categories</p>
+                </div>
+
+                {% if category_breakdown %}
+                    <div class="category-breakdown-list">
+                        {% for cat in category_breakdown %}
+                        <div class="cat-item">
+                            <div class="cat-item-top">
+                                <span class="cat-name"><span class="cat-icon">{{ cat.icon }}</span> {{ cat.name }}</span>
+                                <span class="cat-amount">₹{{ "{:,.2f}".format(cat.total) }} <span class="cat-pct">({{ cat.percentage }}%)</span></span>
+                            </div>
+                            <div class="cat-progress-bg">
+                                <div class="cat-progress-bar" style="width: {{ cat.percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state-box">
+                        <span class="empty-icon">🏷️</span>
+                        <p class="empty-text">No category data available yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Expenses Table Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">Recent Transactions</h2>
+                    <p class="profile-card-subtitle">Your latest 5 recorded expenses</p>
+                </div>
+
+                {% if recent_expenses %}
+                    <div class="table-responsive">
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Expense</th>
+                                    <th>Category</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exp in recent_expenses %}
+                                <tr>
+                                    <td class="cell-date">{{ exp.date }}</td>
+                                    <td>
+                                        <div class="cell-title">{{ exp.title }}</div>
+                                        {% if exp.notes %}
+                                        <div class="cell-notes">{{ exp.notes }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="category-pill">
+                                            <span>{{ exp.category_icon or '🏷️' }}</span>
+                                            <span>{{ exp.category_name or 'Uncategorized' }}</span>
+                                        </span>
+                                    </td>
+                                    <td class="cell-amount text-right font-bold">
+                                        ₹{{ "{:,.2f}".format(exp.amount) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state-box">
+                        <span class="empty-icon">📝</span>
+                        <p class="empty-text">No expenses recorded yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- Account Settings & Password Forms Section -->
+        <div class="profile-section-heading">
+            <h2 class="section-title">Account Settings</h2>
+            <p class="section-subtitle">Manage your personal details and security preferences</p>
+        </div>
+
         <div class="profile-grid">
 
             <!-- Personal Information Form Card -->

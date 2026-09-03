@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing & Plans — Spendly{% endblock %}
+
+{% block content %}
+<section class="pricing-section">
+    <div class="pricing-container">
+
+        <div class="pricing-header">
+            <span class="pricing-badge">Simple, Transparent Pricing</span>
+            <h1 class="pricing-title">Take Control of Your Financial Future</h1>
+            <p class="pricing-subtitle">Start free or upgrade to Spendly Pro for advanced insights, receipt tracking, and unlimited power.</p>
+        </div>
+
+        <div class="pricing-grid">
+
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="pricing-card-top">
+                    <h3 class="plan-name">Spendly Starter</h3>
+                    <p class="plan-desc">Essential tools for individuals starting their budgeting journey.</p>
+                    <div class="plan-price">
+                        <span class="currency">₹</span>
+                        <span class="amount">0</span>
+                        <span class="period">/ forever</span>
+                    </div>
+                </div>
+
+                <div class="plan-cta">
+                    {% if session.get('user_id') and not active_sub %}
+                        <span class="btn-plan current">Current Plan</span>
+                    {% elif session.get('user_id') and active_sub %}
+                        <span class="btn-plan disabled">Base Tier</span>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn-plan outline">Get Started Free</a>
+                    {% endif %}
+                </div>
+
+                <div class="plan-divider"></div>
+
+                <ul class="plan-features">
+                    <li><span class="check">✓</span> Up to 50 expense records/mo</li>
+                    <li><span class="check">✓</span> 10 default expense categories</li>
+                    <li><span class="check">✓</span> Basic monthly totals</li>
+                    <li><span class="check">✓</span> Profile & security management</li>
+                    <li class="faint"><span class="cross">✕</span> PDF & CSV export</li>
+                    <li class="faint"><span class="cross">✕</span> Receipt attachments</li>
+                    <li class="faint"><span class="cross">✕</span> Priority support</li>
+                </ul>
+            </div>
+
+            <!-- Pro Monthly Plan -->
+            <div class="pricing-card {% if active_sub and active_sub.plan_id == 'monthly' %}featured{% endif %}">
+                {% if active_sub and active_sub.plan_id == 'monthly' %}
+                <div class="card-ribbon">Active Plan</div>
+                {% else %}
+                <div class="card-ribbon secondary">{{ plans.monthly.badge }}</div>
+                {% endif %}
+
+                <div class="pricing-card-top">
+                    <h3 class="plan-name">{{ plans.monthly.name }}</h3>
+                    <p class="plan-desc">Complete financial toolkit with flexible monthly billing.</p>
+                    <div class="plan-price">
+                        <span class="currency">₹</span>
+                        <span class="amount">199</span>
+                        <span class="period">/ month</span>
+                    </div>
+                </div>
+
+                <div class="plan-cta">
+                    {% if active_sub and active_sub.plan_id == 'monthly' %}
+                        <span class="btn-plan current">Active Subscription</span>
+                    {% else %}
+                        <a href="{{ url_for('checkout', plan_id='monthly') }}" class="btn-plan">Upgrade to Monthly</a>
+                    {% endif %}
+                </div>
+
+                <div class="plan-divider"></div>
+
+                <ul class="plan-features">
+                    {% for feat in plans.monthly.features %}
+                    <li><span class="check">✓</span> {{ feat }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Pro Annual Plan (Featured) -->
+            <div class="pricing-card featured">
+                <div class="card-ribbon popular">{{ plans.annual.badge }}</div>
+
+                <div class="pricing-card-top">
+                    <h3 class="plan-name">{{ plans.annual.name }}</h3>
+                    <p class="plan-desc">Maximize your savings with full pro capabilities all year long.</p>
+                    <div class="plan-price">
+                        <span class="currency">₹</span>
+                        <span class="amount">1,499</span>
+                        <span class="period">/ year</span>
+                    </div>
+                </div>
+
+                <div class="plan-cta">
+                    {% if active_sub and active_sub.plan_id == 'annual' %}
+                        <span class="btn-plan current">Active Subscription</span>
+                    {% else %}
+                        <a href="{{ url_for('checkout', plan_id='annual') }}" class="btn-plan primary">Get Pro Annual</a>
+                    {% endif %}
+                </div>
+
+                <div class="plan-divider"></div>
+
+                <ul class="plan-features">
+                    {% for feat in plans.annual.features %}
+                    <li><span class="check">✓</span> {{ feat }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

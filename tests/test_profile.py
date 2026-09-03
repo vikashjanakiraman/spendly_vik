@@ -37,9 +37,13 @@ def test_profile_authenticated_get(client, app):
     assert b"nitish@example.com" in response.data
     assert b"Total Expenses" in response.data
     assert b"Total Spent" in response.data
+    assert b"Spending by Category" in response.data
+    assert b"Recent Transactions" in response.data
     # Nitish has 5 sample expenses in seed_db summing to 6400.50
     assert b"5" in response.data
     assert b"6,400.50" in response.data
+    assert b"Groceries" in response.data
+    assert b"Dinner with friends" in response.data
 
 
 def test_profile_update_success(client, app):
