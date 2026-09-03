@@ -123,6 +123,148 @@ def privacy():
     return render_template("privacy.html")
 
 
+PLANS = {
+    "monthly": {
+        "id": "monthly",
+        "name": "Spendly Pro (Monthly)",
+        "price": 199.00,
+        "period": "month",
+        "badge": "Flexible",
+        "features": [
+            "Unlimited expense tracking",
+            "Custom categories & tags",
+            "Advanced monthly analytics & trends",
+            "Export reports to CSV & Excel",
+            "Priority customer support",
+        ],
+    },
+    "annual": {
+        "id": "annual",
+        "name": "Spendly Pro (Annual)",
+        "price": 1499.00,
+        "period": "year",
+        "badge": "Best Value (Save ~37%)",
+        "features": [
+            "Everything in Pro Monthly",
+            "2 months free included",
+            "Export PDF financial summaries",
+            "Receipt attachments & photo capture",
+            "Early access to upcoming features",
+        ],
+    },
+}
+
+
+@app.route("/pricing")
+def pricing():
+    user_id = session.get("user_id")
+    active_sub = None
+    if user_id:
+        db = get_db()
+        active_sub = db.execute(
+            "SELECT * FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+    return render_template("pricing.html", plans=PLANS, active_sub=active_sub)
+
+
+@app.route("/checkout/<plan_id>", methods=["GET", "POST"])
+@login_required
+def checkout(plan_id):
+    if plan_id not in PLANS:
+        return redirect(url_for("pricing"))
+
+    plan = PLANS[plan_id]
+    user_id = session["user_id"]
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    error = None
+
+    if request.method == "POST":
+        payment_method = request.form.get("payment_method", "card")
+        card_name = request.form.get("card_name", "").strip()
+        card_number = request.form.get("card_number", "").strip().replace(" ", "")
+        card_exp = request.form.get("card_exp", "").strip()
+        card_cvv = request.form.get("card_cvv", "").strip()
+        upi_id = request.form.get("upi_id", "").strip()
+
+        if payment_method == "card":
+            if not card_name:
+                error = "Name on card is required."
+            elif not card_number or len(card_number) < 13 or not card_number.isdigit():
+                error = "Please enter a valid card number (13-19 digits)."
+            elif not card_exp or "/" not in card_exp or len(card_exp) != 5:
+                error = "Please enter expiration date in MM/YY format."
+            elif not card_cvv or len(card_cvv) < 3 or not card_cvv.isdigit():
+                error = "Please enter a valid 3 or 4 digit CVV."
+        elif payment_method == "upi":
+            if not upi_id or "@" not in upi_id or len(upi_id) < 5:
+                error = "Please enter a valid UPI ID (e.g. user@okhdfcbank)."
+        else:
+            error = "Invalid payment method selected."
+
+        if not error:
+            pay_detail = (
+                f"Card ending in {card_number[-4:]}"
+                if payment_method == "card"
+                else f"UPI ({upi_id})"
+            )
+            cursor = db.execute(
+                """
+                INSERT INTO subscriptions (user_id, plan_id, amount, payment_method, status)
+                VALUES (?, ?, ?, ?, 'active')
+                """,
+                (user_id, plan["id"], plan["price"], pay_detail),
+            )
+            db.commit()
+            session["last_payment_id"] = cursor.lastrowid
+            flash("Subscription activated successfully!", "payment_success")
+            return redirect(url_for("payment_success"))
+
+        return render_template(
+            "checkout.html",
+            plan=plan,
+            user=user,
+            error=error,
+            payment_method=payment_method,
+            card_name=card_name,
+            card_number=card_number,
+            card_exp=card_exp,
+            upi_id=upi_id,
+        )
+
+    return render_template("checkout.html", plan=plan, user=user)
+
+
+@app.route("/payment/success")
+@login_required
+def payment_success():
+    user_id = session["user_id"]
+    db = get_db()
+    last_payment_id = session.get("last_payment_id")
+
+    if last_payment_id:
+        sub = db.execute(
+            "SELECT * FROM subscriptions WHERE id = ? AND user_id = ?",
+            (last_payment_id, user_id),
+        ).fetchone()
+    else:
+        sub = db.execute(
+            "SELECT * FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+            (user_id,),
+        ).fetchone()
+
+    if not sub:
+        return redirect(url_for("pricing"))
+
+    plan = PLANS.get(
+        sub["plan_id"],
+        {"name": "Spendly Pro", "price": sub["amount"], "period": "cycle"},
+    )
+
+    return render_template("payment_success.html", subscription=sub, plan=plan)
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
@@ -170,7 +312,70 @@ def profile():
     ).fetchone()
 
     stats = db.execute(
-        "SELECT COUNT(*) AS total_count, COALESCE(SUM(amount), 0.0) AS total_amount FROM expenses WHERE user_id = ?",
+        """
+        SELECT 
+            COUNT(*) AS total_count,
+            COALESCE(SUM(amount), 0.0) AS total_amount,
+            COALESCE(AVG(amount), 0.0) AS avg_amount
+        FROM expenses 
+        WHERE user_id = ?
+        """,
+        (user_id,),
+    ).fetchone()
+
+    top_category = db.execute(
+        """
+        SELECT c.name, c.icon, c.color, SUM(e.amount) AS total
+        FROM expenses e
+        JOIN categories c ON e.category_id = c.id
+        WHERE e.user_id = ?
+        GROUP BY c.id
+        ORDER BY total DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    ).fetchone()
+
+    categories_breakdown_raw = db.execute(
+        """
+        SELECT c.id, c.name, c.icon, c.color, COUNT(e.id) AS count, SUM(e.amount) AS total
+        FROM expenses e
+        JOIN categories c ON e.category_id = c.id
+        WHERE e.user_id = ?
+        GROUP BY c.id
+        ORDER BY total DESC
+        """,
+        (user_id,),
+    ).fetchall()
+
+    total_spent = stats["total_amount"] if stats and stats["total_amount"] else 0.0
+    category_breakdown = []
+    for cat in categories_breakdown_raw:
+        pct = (cat["total"] / total_spent * 100) if total_spent > 0 else 0
+        category_breakdown.append({
+            "name": cat["name"],
+            "icon": cat["icon"],
+            "color": cat["color"],
+            "count": cat["count"],
+            "total": cat["total"],
+            "percentage": round(pct, 1),
+        })
+
+    recent_expenses = db.execute(
+        """
+        SELECT e.id, e.title, e.amount, e.date, e.notes, 
+               c.name AS category_name, c.icon AS category_icon, c.color AS category_color
+        FROM expenses e
+        LEFT JOIN categories c ON e.category_id = c.id
+        WHERE e.user_id = ?
+        ORDER BY e.date DESC, e.id DESC
+        LIMIT 5
+        """,
+        (user_id,),
+    ).fetchall()
+
+    subscription = db.execute(
+        "SELECT * FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1",
         (user_id,),
     ).fetchone()
 
@@ -178,6 +383,10 @@ def profile():
         "profile.html",
         user=user,
         stats=stats,
+        top_category=top_category,
+        category_breakdown=category_breakdown,
+        recent_expenses=recent_expenses,
+        subscription=subscription,
         profile_error=profile_error,
     )
 

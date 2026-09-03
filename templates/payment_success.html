@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful — Spendly Pro{% endblock %}
+
+{% block content %}
+<section class="payment-success-section">
+    <div class="payment-success-container">
+
+        <div class="success-card">
+            <div class="success-icon-badge">✓</div>
+            <h1 class="success-title">Payment Successful!</h1>
+            <p class="success-subtitle">Welcome to <strong>{{ plan.name }}</strong>. Your account has been upgraded with all Pro capabilities.</p>
+
+            <div class="receipt-box">
+                <div class="receipt-header">
+                    <span class="receipt-title">Transaction Receipt</span>
+                    <span class="receipt-status-badge">Completed</span>
+                </div>
+                <div class="receipt-divider"></div>
+
+                <div class="receipt-row">
+                    <span class="receipt-label">Subscription ID</span>
+                    <span class="receipt-value font-mono">#SPND-{{ subscription.id }}-{{ subscription.created_at[:10] if subscription.created_at else '2026' }}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Plan</span>
+                    <span class="receipt-value font-bold">{{ plan.name }}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Amount Paid</span>
+                    <span class="receipt-value font-bold accent-text">₹{{ "{:,.2f}".format(subscription.amount) }}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Payment Method</span>
+                    <span class="receipt-value">{{ subscription.payment_method }}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Billing Date</span>
+                    <span class="receipt-value">{{ subscription.created_at | date_format }}</span>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <a href="{{ url_for('profile') }}" class="btn-submit btn-action-primary">View My Profile</a>
+                <a href="{{ url_for('landing') }}" class="btn-plan outline">Back to Home</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

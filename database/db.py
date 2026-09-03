@@ -73,6 +73,17 @@ def init_db(conn=None):
                 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
                 FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL
             );
+
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                plan_id TEXT NOT NULL,
+                amount REAL NOT NULL,
+                payment_method TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            );
         """)
     return db
 

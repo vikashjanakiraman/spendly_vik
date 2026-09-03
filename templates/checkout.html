@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout — {{ plan.name }} — Spendly{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+    <div class="checkout-container">
+
+        <div class="checkout-header">
+            <a href="{{ url_for('pricing') }}" class="checkout-back">← Back to plans</a>
+            <h1 class="checkout-title">Complete Your Upgrade</h1>
+            <p class="checkout-subtitle">You're one step away from unlocking Spendly Pro.</p>
+        </div>
+
+        <div class="checkout-grid">
+
+            <!-- Plan Summary Card -->
+            <div class="checkout-summary-card">
+                <div class="summary-header">
+                    <span class="summary-badge">Selected Plan</span>
+                    <h2 class="summary-plan-name">{{ plan.name }}</h2>
+                    <p class="summary-plan-desc">{{ plan.description if plan.description else 'Full access to all Spendly Pro features.' }}</p>
+                </div>
+
+                <div class="summary-price-box">
+                    <div class="price-row">
+                        <span>Plan Price</span>
+                        <span>₹{{ "{:,.2f}".format(plan.price) }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Billing Cycle</span>
+                        <span class="text-capitalize">Per {{ plan.period }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>GST / Taxes</span>
+                        <span class="tax-inclusive">Included</span>
+                    </div>
+                    <div class="price-divider"></div>
+                    <div class="price-row total-row">
+                        <span>Total Due Today</span>
+                        <span class="total-amount">₹{{ "{:,.2f}".format(plan.price) }}</span>
+                    </div>
+                </div>
+
+                <div class="summary-features">
+                    <p class="summary-features-title">What's included in this plan:</p>
+                    <ul class="summary-features-list">
+                        {% for feat in plan.features %}
+                        <li><span class="check">✓</span> {{ feat }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Payment Form Card -->
+            <div class="checkout-form-card">
+                <div class="payment-form-header">
+                    <h2 class="payment-card-title">Payment Details</h2>
+                    <p class="payment-card-subtitle">Select your preferred payment method</p>
+                </div>
+
+                {% if error %}
+                <div class="auth-error">{{ error }}</div>
+                {% endif %}
+
+                <!-- Method Switcher Tabs -->
+                <div class="payment-tabs">
+                    <button type="button" class="tab-btn {% if payment_method != 'upi' %}active{% endif %}" id="tab-card-btn" onclick="selectPaymentMethod('card')">
+                        💳 Card
+                    </button>
+                    <button type="button" class="tab-btn {% if payment_method == 'upi' %}active{% endif %}" id="tab-upi-btn" onclick="selectPaymentMethod('upi')">
+                        📱 UPI
+                    </button>
+                </div>
+
+                <form method="POST" action="{{ url_for('checkout', plan_id=plan.id) }}" id="checkout-form">
+                    <input type="hidden" name="payment_method" id="payment_method_input" value="{{ payment_method or 'card' }}">
+
+                    <!-- Card Form Fields -->
+                    <div id="card-fields" style="{% if payment_method == 'upi' %}display: none;{% endif %}">
+                        <div class="form-group">
+                            <label for="card_name">Name on Card</label>
+                            <input type="text" id="card_name" name="card_name"
+                                   class="form-input" placeholder="e.g. Nitish Kumar"
+                                   value="{{ card_name or (user.name if user else '') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="card_number">Card Number</label>
+                            <input type="text" id="card_number" name="card_number"
+                                   class="form-input" placeholder="4532 •••• •••• 8921"
+                                   maxlength="19"
+                                   value="{{ card_number or '' }}">
+                        </div>
+
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="card_exp">Expiry Date</label>
+                                <input type="text" id="card_exp" name="card_exp"
+                                       class="form-input" placeholder="MM/YY"
+                                       maxlength="5"
+                                       value="{{ card_exp or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="card_cvv">CVV</label>
+                                <input type="password" id="card_cvv" name="card_cvv"
+                                       class="form-input" placeholder="•••"
+                                       maxlength="4">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPI Form Fields -->
+                    <div id="upi-fields" style="{% if payment_method != 'upi' %}display: none;{% endif %}">
+                        <div class="form-group">
+                            <label for="upi_id">Virtual Payment Address (UPI ID)</label>
+                            <input type="text" id="upi_id" name="upi_id"
+                                   class="form-input" placeholder="username@okhdfcbank"
+                                   value="{{ upi_id or '' }}">
+                            <p class="form-help-text">Google Pay, PhonePe, Paytm, BHIM or any UPI handle.</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit btn-pay">
+                        Pay ₹{{ "{:,.2f}".format(plan.price) }} & Activate Pro
+                    </button>
+
+                    <div class="secure-checkout-notice">
+                        <span class="lock-icon">🔒</span>
+                        <span>256-bit SSL encrypted secure checkout. Instant account activation.</span>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+function selectPaymentMethod(method) {
+    document.getElementById('payment_method_input').value = method;
+    const cardFields = document.getElementById('card-fields');
+    const upiFields = document.getElementById('upi-fields');
+    const tabCard = document.getElementById('tab-card-btn');
+    const tabUpi = document.getElementById('tab-upi-btn');
+
+    if (method === 'card') {
+        cardFields.style.display = 'block';
+        upiFields.style.display = 'none';
+        tabCard.classList.add('active');
+        tabUpi.classList.remove('active');
+    } else {
+        cardFields.style.display = 'none';
+        upiFields.style.display = 'block';
+        tabUpi.classList.add('active');
+        tabCard.classList.remove('active');
+    }
+}
+</script>
+{% endblock %}
