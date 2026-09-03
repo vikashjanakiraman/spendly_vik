@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — Spendly{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="profile-container">
+
+        <!-- Profile Header & Avatar Card -->
+        <div class="profile-header-card">
+            <div class="profile-avatar">
+                {{ user.name[0] | upper if user and user.name else 'U' }}
+            </div>
+            <div class="profile-header-info">
+                <h1 class="profile-name">{{ user.name }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                <span class="profile-badge">Member since {{ user.created_at | date_format }}</span>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="profile-stats-grid">
+            <div class="stat-card">
+                <span class="stat-icon">📊</span>
+                <div class="stat-details">
+                    <p class="stat-label">Total Expenses</p>
+                    <h3 class="stat-value">{{ stats.total_count if stats else 0 }}</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💰</span>
+                <div class="stat-details">
+                    <p class="stat-label">Total Spent</p>
+                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.total_amount) if stats and stats.total_amount else "0.00" }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile & Password Forms Grid -->
+        <div class="profile-grid">
+
+            <!-- Personal Information Form Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">Personal Information</h2>
+                    <p class="profile-card-subtitle">Update your account name and email address</p>
+                </div>
+
+                {% if profile_error %}
+                <div class="auth-error">{{ profile_error }}</div>
+                {% endif %}
+
+                {% with messages = get_flashed_messages(category_filter=["profile_success", "profile_error"]) %}
+                    {% if messages %}
+                        {% for msg in messages %}
+                            <div class="alert-success">{{ msg }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('profile') }}">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name"
+                               class="form-input" placeholder="Your full name"
+                               value="{{ user.name if user else '' }}"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email"
+                               class="form-input" placeholder="your@email.com"
+                               value="{{ user.email if user else '' }}"
+                               required>
+                    </div>
+                    <button type="submit" class="btn-submit">Save changes</button>
+                </form>
+            </div>
+
+            <!-- Password Change Form Card -->
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2 class="profile-card-title">Change Password</h2>
+                    <p class="profile-card-subtitle">Ensure your account uses a secure password</p>
+                </div>
+
+                {% with errors = get_flashed_messages(category_filter=["password_error"]) %}
+                    {% if errors %}
+                        {% for err in errors %}
+                            <div class="auth-error">{{ err }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% with successes = get_flashed_messages(category_filter=["password_success"]) %}
+                    {% if successes %}
+                        {% for succ in successes %}
+                            <div class="alert-success">{{ succ }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('change_password') }}">
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <input type="password" id="current_password" name="current_password"
+                               class="form-input" placeholder="Enter current password"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" id="new_password" name="new_password"
+                               class="form-input" placeholder="Min. 8 characters"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password"
+                               class="form-input" placeholder="Confirm new password"
+                               required>
+                    </div>
+                    <button type="submit" class="btn-submit">Update password</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}
