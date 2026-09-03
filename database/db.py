@@ -159,6 +159,46 @@ def seed_db(conn=None):
     return db
 
 
+def seed_user_expenses(user_id, conn=None):
+    """
+    Seeds initial realistic sample expenses for a user if they have 0 expenses.
+    """
+    db = conn or get_db()
+    cursor = db.cursor()
+
+    cursor.execute("SELECT COUNT(*) as count FROM expenses WHERE user_id = ?", (user_id,))
+    if cursor.fetchone()["count"] > 0:
+        return db
+
+    cursor.execute("SELECT id, name FROM categories")
+    cat_map = {row["name"]: row["id"] for row in cursor.fetchall()}
+
+    sample_expenses = [
+        (user_id, cat_map.get("Food & Dining"), "Swiggy Order - Biryani & Kebabs", 540.00, "2026-09-02", "Weekend dinner"),
+        (user_id, cat_map.get("Groceries"), "Blinkit Quick Delivery", 650.00, "2026-09-02", "Milk, bread, eggs & fruits"),
+        (user_id, cat_map.get("Transportation"), "Uber to Office", 340.00, "2026-09-02", "Morning cab ride"),
+        (user_id, cat_map.get("Bills & Utilities"), "Electricity Bill (BESCOM)", 1420.00, "2026-09-01", "August electricity bill"),
+        (user_id, cat_map.get("Entertainment"), "PVR IMAX - Movie Tickets", 850.00, "2026-09-01", "2 tickets & popcorn"),
+        (user_id, cat_map.get("Food & Dining"), "Cafe Coffee Day & Snacks", 280.00, "2026-08-31", "Coffee with colleague"),
+        (user_id, cat_map.get("Housing & Rent"), "Apartment Maintenance Dues", 2500.00, "2026-08-31", "Society maintenance dues"),
+        (user_id, cat_map.get("Transportation"), "Metro Smart Card Recharge", 500.00, "2026-08-30", "Monthly card top-up"),
+        (user_id, cat_map.get("Shopping"), "Myntra Casual Clothing", 2299.00, "2026-08-29", "Shirts and cotton trousers"),
+        (user_id, cat_map.get("Healthcare"), "Apollo Pharmacy Medicines", 640.00, "2026-08-29", "First aid & vitamins"),
+        (user_id, cat_map.get("Bills & Utilities"), "Airtel Fiber Broadband", 999.00, "2026-08-28", "Monthly 200Mbps internet"),
+        (user_id, cat_map.get("Groceries"), "Monthly Supermarket Shopping", 3450.00, "2026-08-28", "D-Mart grocery run"),
+    ]
+
+    cursor.executemany(
+        """
+        INSERT INTO expenses (user_id, category_id, title, amount, date, notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        sample_expenses,
+    )
+    db.commit()
+    return db
+
+
 @click.command("init-db")
 def init_db_command():
     """Clear existing data and create new tables."""

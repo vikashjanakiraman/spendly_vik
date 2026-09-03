@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}My Profile — Spendly{% endblock %}
+{% block title %}Dashboard & Profile — Spendly{% endblock %}
 
 {% block content %}
 <section class="profile-section">
     <div class="profile-container">
 
-        <!-- Profile Header & Avatar Card -->
+        <!-- Top Profile & Welcome Header -->
         <div class="profile-header-card">
             <div class="profile-avatar">
                 {{ user.name[0] | upper if user and user.name else 'U' }}
@@ -25,91 +25,159 @@
             </div>
         </div>
 
-        <!-- Expense Summary Stat Cards -->
-        <div class="profile-stats-grid-4">
-            <div class="stat-card">
-                <span class="stat-icon">💰</span>
-                <div class="stat-details">
-                    <p class="stat-label">Total Spent</p>
-                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.total_amount) if stats and stats.total_amount else "0.00" }}</h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon">📊</span>
-                <div class="stat-details">
-                    <p class="stat-label">Total Expenses</p>
-                    <h3 class="stat-value">{{ stats.total_count if stats else 0 }}</h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon">{{ top_category.icon if top_category else '🏷️' }}</span>
-                <div class="stat-details">
-                    <p class="stat-label">Top Category</p>
-                    <h3 class="stat-value font-compact">{{ top_category.name if top_category else 'None yet' }}</h3>
-                </div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon">📈</span>
-                <div class="stat-details">
-                    <p class="stat-label">Average / Expense</p>
-                    <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.avg_amount) if stats and stats.avg_amount else "0.00" }}</h3>
-                </div>
-            </div>
+        <!-- Main Profile Nav Tabs -->
+        <div class="profile-tab-navigation">
+            <button type="button" class="profile-tab-btn {% if active_tab != 'settings' %}active{% endif %}" id="btn-tab-overview" onclick="switchProfileTab('overview')">
+                <span class="tab-icon">📊</span> Transaction Summary
+            </button>
+            <button type="button" class="profile-tab-btn {% if active_tab == 'settings' %}active{% endif %}" id="btn-tab-settings" onclick="switchProfileTab('settings')">
+                <span class="tab-icon">⚙️</span> Account Settings
+            </button>
         </div>
 
-        <!-- Expense Analytics & Recent Activity Grid -->
-        <div class="profile-grid">
+        <!-- ============================================================= -->
+        <!-- TAB 1: TRANSACTION SUMMARY VIEW                               -->
+        <!-- ============================================================= -->
+        <div id="tab-pane-overview" class="tab-content-pane" style="{% if active_tab == 'settings' %}display: none;{% endif %}">
 
-            <!-- Category Spending Breakdown Card -->
-            <div class="profile-card">
-                <div class="profile-card-header">
-                    <h2 class="profile-card-title">Spending by Category</h2>
-                    <p class="profile-card-subtitle">Distribution of your expenses across categories</p>
+            <!-- Expense Summary Stat Cards -->
+            <div class="profile-stats-grid-4">
+                <div class="stat-card">
+                    <span class="stat-icon">💰</span>
+                    <div class="stat-details">
+                        <p class="stat-label">Total Spent</p>
+                        <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.total_amount) if stats and stats.total_amount else "0.00" }}</h3>
+                    </div>
                 </div>
-
-                {% if category_breakdown %}
-                    <div class="category-breakdown-list">
-                        {% for cat in category_breakdown %}
-                        <div class="cat-item">
-                            <div class="cat-item-top">
-                                <span class="cat-name"><span class="cat-icon">{{ cat.icon }}</span> {{ cat.name }}</span>
-                                <span class="cat-amount">₹{{ "{:,.2f}".format(cat.total) }} <span class="cat-pct">({{ cat.percentage }}%)</span></span>
-                            </div>
-                            <div class="cat-progress-bg">
-                                <div class="cat-progress-bar" style="width: {{ cat.percentage }}%;"></div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <div class="stat-card">
+                    <span class="stat-icon">📊</span>
+                    <div class="stat-details">
+                        <p class="stat-label">Total Expenses</p>
+                        <h3 class="stat-value">{{ stats.total_count if stats else 0 }}</h3>
                     </div>
-                {% else %}
-                    <div class="empty-state-box">
-                        <span class="empty-icon">🏷️</span>
-                        <p class="empty-text">No category data available yet.</p>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">{{ top_category.icon if top_category else '🏷️' }}</span>
+                    <div class="stat-details">
+                        <p class="stat-label">Top Category</p>
+                        <h3 class="stat-value font-compact">{{ top_category.name if top_category else 'None yet' }}</h3>
                     </div>
-                {% endif %}
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📈</span>
+                    <div class="stat-details">
+                        <p class="stat-label">Average / Expense</p>
+                        <h3 class="stat-value">₹{{ "{:,.2f}".format(stats.avg_amount) if stats and stats.avg_amount else "0.00" }}</h3>
+                    </div>
+                </div>
             </div>
 
-            <!-- Recent Expenses Table Card -->
-            <div class="profile-card">
-                <div class="profile-card-header">
-                    <h2 class="profile-card-title">Recent Transactions</h2>
-                    <p class="profile-card-subtitle">Your latest 5 recorded expenses</p>
+            <!-- Category Breakdown & Insights Grid -->
+            <div class="profile-grid">
+
+                <!-- Spending by Category Card -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2 class="profile-card-title">Spending by Category</h2>
+                        <p class="profile-card-subtitle">Distribution of your expenses across categories</p>
+                    </div>
+
+                    {% if category_breakdown %}
+                        <div class="category-breakdown-list">
+                            {% for cat in category_breakdown %}
+                            <div class="cat-item">
+                                <div class="cat-item-top">
+                                    <span class="cat-name"><span class="cat-icon">{{ cat.icon }}</span> {{ cat.name }}</span>
+                                    <span class="cat-amount">₹{{ "{:,.2f}".format(cat.total) }} <span class="cat-pct">({{ cat.percentage }}%)</span></span>
+                                </div>
+                                <div class="cat-progress-bg">
+                                    <div class="cat-progress-bar" style="width: {{ cat.percentage }}%; background-color: {{ cat.color or 'var(--accent)' }};"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state-box">
+                            <span class="empty-icon">🏷️</span>
+                            <p class="empty-text">No category data available yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Financial Quick Summary Card -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2 class="profile-card-title">Expense Insights</h2>
+                        <p class="profile-card-subtitle">Summary breakdown of your spending habits</p>
+                    </div>
+
+                    <div class="insights-list">
+                        <div class="insight-row">
+                            <span class="insight-label">Highest Expense</span>
+                            <span class="insight-value font-bold">₹{{ "{:,.2f}".format(stats.max_amount) if stats and stats.max_amount else "0.00" }}</span>
+                        </div>
+                        <div class="insight-row">
+                            <span class="insight-label">Active Categories</span>
+                            <span class="insight-value">{{ category_breakdown | length }} categories</span>
+                        </div>
+                        <div class="insight-row">
+                            <span class="insight-label">Top Expense Category</span>
+                            <span class="insight-value">
+                                {% if top_category %}
+                                    {{ top_category.icon }} {{ top_category.name }} (₹{{ "{:,.2f}".format(top_category.total) }})
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="insight-row">
+                            <span class="insight-label">Subscription Tier</span>
+                            <span class="insight-value">
+                                {% if subscription %}
+                                    <strong class="accent-text">Spendly Pro ({{ subscription.plan_id | capitalize }})</strong>
+                                {% else %}
+                                    Free Starter Tier
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="insights-cta-box">
+                        <p class="insights-cta-text">Want detailed monthly reports and receipt storage?</p>
+                        <a href="{{ url_for('pricing') }}" class="btn-submit btn-sm">Explore Pro Plans</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Full Transaction History Table Card -->
+            <div class="profile-card profile-full-card">
+                <div class="profile-card-header flex-between">
+                    <div>
+                        <h2 class="profile-card-title">Recent Transactions</h2>
+                        <p class="profile-card-subtitle">Complete log of your recorded expenses</p>
+                    </div>
+                    {% if recent_expenses %}
+                    <div class="table-search-box">
+                        <input type="text" id="transaction-search" class="form-input search-input" placeholder="🔍 Search expenses..." onkeyup="filterTransactions()">
+                    </div>
+                    {% endif %}
                 </div>
 
                 {% if recent_expenses %}
                     <div class="table-responsive">
-                        <table class="expenses-table">
+                        <table class="expenses-table" id="expenses-table">
                             <thead>
                                 <tr>
                                     <th>Date</th>
-                                    <th>Expense</th>
+                                    <th>Expense Title & Notes</th>
                                     <th>Category</th>
-                                    <th class="text-right">Amount</th>
+                                    <th class="text-right">Amount (₹)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for exp in recent_expenses %}
-                                <tr>
+                                <tr class="expense-row">
                                     <td class="cell-date">{{ exp.date }}</td>
                                     <td>
                                         <div class="cell-title">{{ exp.title }}</div>
@@ -141,100 +209,160 @@
 
         </div>
 
-        <!-- Account Settings & Password Forms Section -->
-        <div class="profile-section-heading">
-            <h2 class="section-title">Account Settings</h2>
-            <p class="section-subtitle">Manage your personal details and security preferences</p>
-        </div>
+        <!-- ============================================================= -->
+        <!-- TAB 2: ACCOUNT SETTINGS VIEW                                  -->
+        <!-- ============================================================= -->
+        <div id="tab-pane-settings" class="tab-content-pane" style="{% if active_tab != 'settings' %}display: none;{% endif %}">
 
-        <div class="profile-grid">
+            <div class="profile-grid">
 
-            <!-- Personal Information Form Card -->
-            <div class="profile-card">
-                <div class="profile-card-header">
-                    <h2 class="profile-card-title">Personal Information</h2>
-                    <p class="profile-card-subtitle">Update your account name and email address</p>
+                <!-- Personal Information Form Card -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2 class="profile-card-title">Personal Information</h2>
+                        <p class="profile-card-subtitle">Update your account name and email address</p>
+                    </div>
+
+                    {% if profile_error %}
+                    <div class="auth-error">{{ profile_error }}</div>
+                    {% endif %}
+
+                    {% with messages = get_flashed_messages(category_filter=["profile_success", "profile_error"]) %}
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="alert-success">{{ msg }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('profile', tab='settings') }}">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name"
+                                   class="form-input" placeholder="Your full name"
+                                   value="{{ user.name if user else '' }}"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email"
+                                   class="form-input" placeholder="your@email.com"
+                                   value="{{ user.email if user else '' }}"
+                                   required>
+                        </div>
+                        <button type="submit" class="btn-submit">Save changes</button>
+                    </form>
                 </div>
 
-                {% if profile_error %}
-                <div class="auth-error">{{ profile_error }}</div>
-                {% endif %}
-
-                {% with messages = get_flashed_messages(category_filter=["profile_success", "profile_error"]) %}
-                    {% if messages %}
-                        {% for msg in messages %}
-                            <div class="alert-success">{{ msg }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('profile') }}">
-                    <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name"
-                               class="form-input" placeholder="Your full name"
-                               value="{{ user.name if user else '' }}"
-                               required>
+                <!-- Password Change Form Card -->
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <h2 class="profile-card-title">Change Password</h2>
+                        <p class="profile-card-subtitle">Ensure your account uses a secure password</p>
                     </div>
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email"
-                               class="form-input" placeholder="your@email.com"
-                               value="{{ user.email if user else '' }}"
-                               required>
-                    </div>
-                    <button type="submit" class="btn-submit">Save changes</button>
-                </form>
+
+                    {% with errors = get_flashed_messages(category_filter=["password_error"]) %}
+                        {% if errors %}
+                            {% for err in errors %}
+                                <div class="auth-error">{{ err }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% with successes = get_flashed_messages(category_filter=["password_success"]) %}
+                        {% if successes %}
+                            {% for succ in successes %}
+                                <div class="alert-success">{{ succ }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('change_password') }}">
+                        <div class="form-group">
+                            <label for="current_password">Current Password</label>
+                            <input type="password" id="current_password" name="current_password"
+                                   class="form-input" placeholder="Enter current password"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" id="new_password" name="new_password"
+                                   class="form-input" placeholder="Min. 8 characters"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm New Password</label>
+                            <input type="password" id="confirm_password" name="confirm_password"
+                                   class="form-input" placeholder="Confirm new password"
+                                   required>
+                        </div>
+                        <button type="submit" class="btn-submit">Update password</button>
+                    </form>
+                </div>
+
             </div>
 
-            <!-- Password Change Form Card -->
-            <div class="profile-card">
-                <div class="profile-card-header">
-                    <h2 class="profile-card-title">Change Password</h2>
-                    <p class="profile-card-subtitle">Ensure your account uses a secure password</p>
+            <!-- Subscription Tier & Membership Card -->
+            <div class="profile-card profile-full-card" style="margin-top: 1.5rem;">
+                <div class="profile-card-header flex-between">
+                    <div>
+                        <h2 class="profile-card-title">Subscription & Plan</h2>
+                        <p class="profile-card-subtitle">Manage your Spendly membership tier and billing</p>
+                    </div>
+                    {% if subscription %}
+                        <span class="profile-badge badge-pro">⭐ Active Pro Tier</span>
+                    {% else %}
+                        <span class="profile-badge badge-free">Free Starter Tier</span>
+                    {% endif %}
                 </div>
 
-                {% with errors = get_flashed_messages(category_filter=["password_error"]) %}
-                    {% if errors %}
-                        {% for err in errors %}
-                            <div class="auth-error">{{ err }}</div>
-                        {% endfor %}
+                <div class="plan-management-box">
+                    {% if subscription %}
+                        <p class="plan-mgmt-desc">You are currently subscribed to <strong>Spendly Pro ({{ subscription.plan_id | capitalize }})</strong> billed at <strong>₹{{ "{:,.2f}".format(subscription.amount) }}</strong>. You have unlimited expenses, custom tags, and export capabilities enabled.</p>
+                        <a href="{{ url_for('pricing') }}" class="btn-submit btn-sm" style="max-width: 220px;">Change Plan</a>
+                    {% else %}
+                        <p class="plan-mgmt-desc">You are currently on the <strong>Spendly Free Starter Plan</strong>. Upgrade to Spendly Pro to unlock unlimited expense tracking, receipt uploads, and PDF export.</p>
+                        <a href="{{ url_for('pricing') }}" class="btn-submit btn-sm" style="max-width: 220px;">Upgrade to Spendly Pro</a>
                     {% endif %}
-                {% endwith %}
-
-                {% with successes = get_flashed_messages(category_filter=["password_success"]) %}
-                    {% if successes %}
-                        {% for succ in successes %}
-                            <div class="alert-success">{{ succ }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('change_password') }}">
-                    <div class="form-group">
-                        <label for="current_password">Current Password</label>
-                        <input type="password" id="current_password" name="current_password"
-                               class="form-input" placeholder="Enter current password"
-                               required>
-                    </div>
-                    <div class="form-group">
-                        <label for="new_password">New Password</label>
-                        <input type="password" id="new_password" name="new_password"
-                               class="form-input" placeholder="Min. 8 characters"
-                               required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirm_password">Confirm New Password</label>
-                        <input type="password" id="confirm_password" name="confirm_password"
-                               class="form-input" placeholder="Confirm new password"
-                               required>
-                    </div>
-                    <button type="submit" class="btn-submit">Update password</button>
-                </form>
+                </div>
             </div>
 
         </div>
 
     </div>
 </section>
+
+<script>
+function switchProfileTab(tabName) {
+    const paneOverview = document.getElementById('tab-pane-overview');
+    const paneSettings = document.getElementById('tab-pane-settings');
+    const btnOverview = document.getElementById('btn-tab-overview');
+    const btnSettings = document.getElementById('btn-tab-settings');
+
+    if (tabName === 'settings') {
+        paneOverview.style.display = 'none';
+        paneSettings.style.display = 'block';
+        btnSettings.classList.add('active');
+        btnOverview.classList.remove('active');
+        history.replaceState(null, null, '?tab=settings');
+    } else {
+        paneOverview.style.display = 'block';
+        paneSettings.style.display = 'none';
+        btnOverview.classList.add('active');
+        btnSettings.classList.remove('active');
+        history.replaceState(null, null, '?tab=overview');
+    }
+}
+
+function filterTransactions() {
+    const input = document.getElementById('transaction-search');
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll('.expense-row');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}

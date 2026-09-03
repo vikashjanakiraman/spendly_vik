@@ -65,7 +65,7 @@ def test_profile_update_success(client, app):
     )
 
     assert response.status_code == 302
-    assert response.headers["Location"] == "/profile"
+    assert "/profile" in response.headers["Location"]
 
     # Verify session updated
     with client.session_transaction() as session:
@@ -181,7 +181,7 @@ def test_change_password_success(client, app):
     )
 
     assert response.status_code == 302
-    assert response.headers["Location"] == "/profile"
+    assert "/profile" in response.headers["Location"]
 
     # Check updated hash in DB
     with app.app_context():

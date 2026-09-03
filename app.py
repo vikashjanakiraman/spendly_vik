@@ -281,8 +281,10 @@ def profile():
     user_id = session["user_id"]
     db = get_db()
     profile_error = None
+    active_tab = request.args.get("tab", "overview")
 
     if request.method == "POST":
+        active_tab = "settings"
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip().lower()
 
@@ -305,7 +307,7 @@ def profile():
                 db.commit()
                 session["user_name"] = name
                 flash("Profile updated successfully.", "profile_success")
-                return redirect(url_for("profile"))
+                return redirect(url_for("profile", tab="settings"))
 
     user = db.execute(
         "SELECT id, name, email, created_at FROM users WHERE id = ?", (user_id,)
@@ -316,7 +318,8 @@ def profile():
         SELECT 
             COUNT(*) AS total_count,
             COALESCE(SUM(amount), 0.0) AS total_amount,
-            COALESCE(AVG(amount), 0.0) AS avg_amount
+            COALESCE(AVG(amount), 0.0) AS avg_amount,
+            COALESCE(MAX(amount), 0.0) AS max_amount
         FROM expenses 
         WHERE user_id = ?
         """,
@@ -369,7 +372,7 @@ def profile():
         LEFT JOIN categories c ON e.category_id = c.id
         WHERE e.user_id = ?
         ORDER BY e.date DESC, e.id DESC
-        LIMIT 5
+        LIMIT 50
         """,
         (user_id,),
     ).fetchall()
@@ -388,6 +391,7 @@ def profile():
         recent_expenses=recent_expenses,
         subscription=subscription,
         profile_error=profile_error,
+        active_tab=active_tab,
     )
 
 
@@ -421,7 +425,7 @@ def change_password():
         db.commit()
         flash("Password updated successfully.", "password_success")
 
-    return redirect(url_for("profile"))
+    return redirect(url_for("profile", tab="settings"))
 
 
 @app.route("/expenses/add")
