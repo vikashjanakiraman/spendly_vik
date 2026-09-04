@@ -1,6 +1,6 @@
 import os
 import functools
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import init_app, get_db
@@ -313,42 +313,134 @@ def profile():
         "SELECT id, name, email, created_at FROM users WHERE id = ?", (user_id,)
     ).fetchone()
 
+    # Parse date range filter query parameters
+    active_range = request.args.get("range", "all").strip().lower()
+    custom_start = request.args.get("start_date", "").strip()
+    custom_end = request.args.get("end_date", "").strip()
+
+    filter_start = None
+    filter_end = None
+    filter_label = "All Time"
+
+    today = date.today()
+
+    if active_range == "today":
+        filter_start = today.isoformat()
+        filter_end = today.isoformat()
+        filter_label = f"Today ({today.strftime('%b %d, %Y')})"
+    elif active_range == "last7":
+        start_d = today - timedelta(days=6)
+        filter_start = start_d.isoformat()
+        filter_end = today.isoformat()
+        filter_label = f"Last 7 Days ({start_d.strftime('%b %d')} – {today.strftime('%b %d, %Y')})"
+    elif active_range == "this_month":
+        start_d = date(today.year, today.month, 1)
+        filter_start = start_d.isoformat()
+        filter_end = today.isoformat()
+        filter_label = f"This Month ({start_d.strftime('%b %d')} – {today.strftime('%b %d, %Y')})"
+    elif active_range == "last30":
+        start_d = today - timedelta(days=29)
+        filter_start = start_d.isoformat()
+        filter_end = today.isoformat()
+        filter_label = f"Last 30 Days ({start_d.strftime('%b %d')} – {today.strftime('%b %d, %Y')})"
+    elif active_range == "this_year":
+        start_d = date(today.year, 1, 1)
+        filter_start = start_d.isoformat()
+        filter_end = today.isoformat()
+        filter_label = f"This Year ({start_d.strftime('%b %d')} – {today.strftime('%b %d, %Y')})"
+    elif active_range == "custom" or custom_start or custom_end:
+        active_range = "custom"
+        valid_start = None
+        valid_end = None
+
+        if custom_start:
+            try:
+                valid_start = datetime.strptime(custom_start, "%Y-%m-%d").date()
+                filter_start = valid_start.isoformat()
+            except ValueError:
+                filter_start = None
+
+        if custom_end:
+            try:
+                valid_end = datetime.strptime(custom_end, "%Y-%m-%d").date()
+                filter_end = valid_end.isoformat()
+            except ValueError:
+                filter_end = None
+
+        if valid_start and valid_end and valid_start > valid_end:
+            filter_start, filter_end = filter_end, filter_start
+            valid_start, valid_end = valid_end, valid_start
+
+        if filter_start and filter_end:
+            filter_label = f"Custom ({valid_start.strftime('%b %d, %Y')} – {valid_end.strftime('%b %d, %Y')})"
+        elif filter_start:
+            filter_label = f"From {valid_start.strftime('%b %d, %Y')} onwards"
+        elif filter_end:
+            filter_label = f"Up to {valid_end.strftime('%b %d, %Y')}"
+        else:
+            active_range = "all"
+            filter_label = "All Time"
+    else:
+        active_range = "all"
+        filter_label = "All Time"
+
+    # Build dynamic parameterized SQL filters
+    expense_clauses = ["user_id = ?"]
+    expense_params = [user_id]
+    if filter_start:
+        expense_clauses.append("date >= ?")
+        expense_params.append(filter_start)
+    if filter_end:
+        expense_clauses.append("date <= ?")
+        expense_params.append(filter_end)
+    expense_where_sql = " AND ".join(expense_clauses)
+
+    e_clauses = ["e.user_id = ?"]
+    e_params = [user_id]
+    if filter_start:
+        e_clauses.append("e.date >= ?")
+        e_params.append(filter_start)
+    if filter_end:
+        e_clauses.append("e.date <= ?")
+        e_params.append(filter_end)
+    e_where_sql = " AND ".join(e_clauses)
+
     stats = db.execute(
-        """
-        SELECT 
+        f"""
+        SELECT
             COUNT(*) AS total_count,
             COALESCE(SUM(amount), 0.0) AS total_amount,
             COALESCE(AVG(amount), 0.0) AS avg_amount,
             COALESCE(MAX(amount), 0.0) AS max_amount
-        FROM expenses 
-        WHERE user_id = ?
+        FROM expenses
+        WHERE {expense_where_sql}
         """,
-        (user_id,),
+        expense_params,
     ).fetchone()
 
     top_category = db.execute(
-        """
+        f"""
         SELECT c.name, c.icon, c.color, SUM(e.amount) AS total
         FROM expenses e
         JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = ?
+        WHERE {e_where_sql}
         GROUP BY c.id
         ORDER BY total DESC
         LIMIT 1
         """,
-        (user_id,),
+        e_params,
     ).fetchone()
 
     categories_breakdown_raw = db.execute(
-        """
+        f"""
         SELECT c.id, c.name, c.icon, c.color, COUNT(e.id) AS count, SUM(e.amount) AS total
         FROM expenses e
         JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = ?
+        WHERE {e_where_sql}
         GROUP BY c.id
         ORDER BY total DESC
         """,
-        (user_id,),
+        e_params,
     ).fetchall()
 
     total_spent = stats["total_amount"] if stats and stats["total_amount"] else 0.0
@@ -365,16 +457,16 @@ def profile():
         })
 
     recent_expenses = db.execute(
-        """
-        SELECT e.id, e.title, e.amount, e.date, e.notes, 
+        f"""
+        SELECT e.id, e.title, e.amount, e.date, e.notes,
                c.name AS category_name, c.icon AS category_icon, c.color AS category_color
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = ?
+        WHERE {e_where_sql}
         ORDER BY e.date DESC, e.id DESC
-        LIMIT 50
+        LIMIT 100
         """,
-        (user_id,),
+        e_params,
     ).fetchall()
 
     subscription = db.execute(
@@ -392,6 +484,10 @@ def profile():
         subscription=subscription,
         profile_error=profile_error,
         active_tab=active_tab,
+        active_range=active_range,
+        filter_start=filter_start or "",
+        filter_end=filter_end or "",
+        filter_label=filter_label,
     )
 
 

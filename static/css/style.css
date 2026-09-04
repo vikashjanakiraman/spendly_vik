@@ -680,6 +680,184 @@ a { color: inherit; text-decoration: none; }
     line-height: 1.5;
 }
 
+/* ------------------------------------------------------------------ */
+/* Date Filter Toolbar                                                */
+/* ------------------------------------------------------------------ */
+
+.filter-toolbar-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filter-toolbar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.filter-presets-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.filter-label-title {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-right: 0.35rem;
+}
+
+.filter-preset-pill {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    background: var(--paper-warm);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.filter-preset-pill:hover {
+    background: var(--border);
+    color: var(--ink);
+}
+
+.filter-preset-pill.active {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.filter-custom-form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border-soft);
+}
+
+.filter-inputs-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.filter-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.filter-date-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+}
+
+.filter-date-input {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.825rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    width: auto;
+    background: var(--paper);
+}
+
+.filter-actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.btn-filter-apply {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.825rem;
+    font-weight: 500;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-filter-apply:hover {
+    background: var(--accent);
+}
+
+.btn-filter-reset {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-decoration: none;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.btn-filter-reset:hover {
+    color: var(--danger);
+    border-color: #f5c6c2;
+    background: var(--danger-light);
+}
+
+.filter-active-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--accent-light);
+    border: 1px solid #c3ddcb;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.85rem;
+    font-size: 0.825rem;
+    color: var(--accent);
+}
+
+.filter-status-text {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filter-status-clear {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.filter-status-clear:hover {
+    color: var(--danger);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .filter-actions-wrapper {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
 .profile-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

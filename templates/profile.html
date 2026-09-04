@@ -40,6 +40,49 @@
         <!-- ============================================================= -->
         <div id="tab-pane-overview" class="tab-content-pane" style="{% if active_tab == 'settings' %}display: none;{% endif %}">
 
+            <!-- Date Filter Toolbar Card -->
+            <div class="filter-toolbar-card">
+                <div class="filter-toolbar-top">
+                    <div class="filter-presets-group">
+                        <span class="filter-label-title">Timeframe:</span>
+                        <a href="{{ url_for('profile', range='all', tab='overview') }}" class="filter-preset-pill {% if active_range == 'all' %}active{% endif %}">All Time</a>
+                        <a href="{{ url_for('profile', range='today', tab='overview') }}" class="filter-preset-pill {% if active_range == 'today' %}active{% endif %}">Today</a>
+                        <a href="{{ url_for('profile', range='last7', tab='overview') }}" class="filter-preset-pill {% if active_range == 'last7' %}active{% endif %}">Last 7 Days</a>
+                        <a href="{{ url_for('profile', range='this_month', tab='overview') }}" class="filter-preset-pill {% if active_range == 'this_month' %}active{% endif %}">This Month</a>
+                        <a href="{{ url_for('profile', range='last30', tab='overview') }}" class="filter-preset-pill {% if active_range == 'last30' %}active{% endif %}">Last 30 Days</a>
+                        <a href="{{ url_for('profile', range='this_year', tab='overview') }}" class="filter-preset-pill {% if active_range == 'this_year' %}active{% endif %}">This Year</a>
+                    </div>
+                </div>
+
+                <form method="GET" action="{{ url_for('profile') }}" class="filter-custom-form">
+                    <input type="hidden" name="tab" value="overview">
+                    <input type="hidden" name="range" value="custom">
+                    <div class="filter-inputs-group">
+                        <div class="filter-input-wrapper">
+                            <label for="start_date" class="filter-date-label">From</label>
+                            <input type="date" id="start_date" name="start_date" class="form-input filter-date-input" value="{{ filter_start }}">
+                        </div>
+                        <div class="filter-input-wrapper">
+                            <label for="end_date" class="filter-date-label">To</label>
+                            <input type="date" id="end_date" name="end_date" class="form-input filter-date-input" value="{{ filter_end }}">
+                        </div>
+                        <div class="filter-actions-wrapper">
+                            <button type="submit" class="btn-filter-apply">Apply</button>
+                            {% if active_range != 'all' or filter_start or filter_end %}
+                            <a href="{{ url_for('profile', tab='overview') }}" class="btn-filter-reset" title="Reset filter">Reset</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+
+                {% if active_range != 'all' %}
+                <div class="filter-active-status">
+                    <span class="filter-status-text">Showing data for <strong>{{ filter_label }}</strong></span>
+                    <a href="{{ url_for('profile', tab='overview') }}" class="filter-status-clear">✕ Clear filter</a>
+                </div>
+                {% endif %}
+            </div>
+
             <!-- Expense Summary Stat Cards -->
             <div class="profile-stats-grid-4">
                 <div class="stat-card">
@@ -99,7 +142,13 @@
                     {% else %}
                         <div class="empty-state-box">
                             <span class="empty-icon">🏷️</span>
-                            <p class="empty-text">No category data available yet.</p>
+                            <p class="empty-text">
+                                {% if active_range != 'all' %}
+                                    No category data for this timeframe.
+                                {% else %}
+                                    No category data available yet.
+                                {% endif %}
+                            </p>
                         </div>
                     {% endif %}
                 </div>
@@ -202,7 +251,16 @@
                 {% else %}
                     <div class="empty-state-box">
                         <span class="empty-icon">📝</span>
-                        <p class="empty-text">No expenses recorded yet.</p>
+                        <p class="empty-text">
+                            {% if active_range != 'all' %}
+                                No expenses recorded for the selected timeframe.
+                            {% else %}
+                                No expenses recorded yet.
+                            {% endif %}
+                        </p>
+                        {% if active_range != 'all' %}
+                        <a href="{{ url_for('profile', tab='overview') }}" class="btn-submit btn-sm" style="max-width: 180px; margin-top: 0.5rem;">View All Time</a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -339,19 +397,21 @@ function switchProfileTab(tabName) {
     const btnOverview = document.getElementById('btn-tab-overview');
     const btnSettings = document.getElementById('btn-tab-settings');
 
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', tabName);
+
     if (tabName === 'settings') {
         paneOverview.style.display = 'none';
         paneSettings.style.display = 'block';
         btnSettings.classList.add('active');
         btnOverview.classList.remove('active');
-        history.replaceState(null, null, '?tab=settings');
     } else {
         paneOverview.style.display = 'block';
         paneSettings.style.display = 'none';
         btnOverview.classList.add('active');
         btnSettings.classList.remove('active');
-        history.replaceState(null, null, '?tab=overview');
     }
+    history.replaceState(null, null, '?' + params.toString());
 }
 
 function filterTransactions() {
