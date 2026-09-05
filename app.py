@@ -524,9 +524,97 @@ def change_password():
     return redirect(url_for("profile", tab="settings"))
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
+@login_required
 def add_expense():
-    return "Add expense — coming in Step 7"
+    db = get_db()
+    today_str = date.today().isoformat()
+    error = None
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        amount_raw = request.form.get("amount", "").strip()
+        category_id_raw = request.form.get("category_id", "").strip()
+        expense_date = request.form.get("date", "").strip()
+        notes = request.form.get("notes", "").strip()
+
+        amount = None
+        category_id = None
+
+        if not title:
+            error = "Expense title is required."
+        elif len(title) > 100:
+            error = "Expense title cannot exceed 100 characters."
+        elif not amount_raw:
+            error = "Expense amount is required."
+        else:
+            try:
+                amount = float(amount_raw)
+                if amount <= 0:
+                    error = "Amount must be greater than zero."
+            except (ValueError, TypeError):
+                error = "Please enter a valid positive number for amount."
+
+        if not error and not expense_date:
+            error = "Transaction date is required."
+        elif not error:
+            try:
+                datetime.strptime(expense_date, "%Y-%m-%d")
+            except ValueError:
+                error = "Please enter a valid date in YYYY-MM-DD format."
+
+        if not error and not category_id_raw:
+            error = "Please select an expense category."
+        elif not error:
+            try:
+                category_id = int(category_id_raw)
+                cat = db.execute(
+                    "SELECT id FROM categories WHERE id = ?", (category_id,)
+                ).fetchone()
+                if not cat:
+                    error = "Selected category does not exist."
+            except (ValueError, TypeError):
+                error = "Selected category is invalid."
+
+        if not error and len(notes) > 500:
+            error = "Notes cannot exceed 500 characters."
+
+        if not error:
+            db.execute(
+                """
+                INSERT INTO expenses (user_id, category_id, title, amount, date, notes)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (session["user_id"], category_id, title, round(amount, 2), expense_date, notes or None),
+            )
+            db.commit()
+            flash("Expense added successfully!", "expense_success")
+            return redirect(url_for("profile"))
+
+        categories = db.execute(
+            "SELECT id, name, icon, color FROM categories ORDER BY name ASC"
+        ).fetchall()
+        return render_template(
+            "add_expense.html",
+            categories=categories,
+            error=error,
+            title=title,
+            amount=amount_raw,
+            category_id=category_id_raw,
+            expense_date=expense_date,
+            notes=notes,
+            today=today_str,
+        )
+
+    categories = db.execute(
+        "SELECT id, name, icon, color FROM categories ORDER BY name ASC"
+    ).fetchall()
+    return render_template(
+        "add_expense.html",
+        categories=categories,
+        today=today_str,
+        expense_date=today_str,
+    )
 
 
 @app.route("/expenses/<int:id>/edit")

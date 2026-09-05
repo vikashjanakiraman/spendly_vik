@@ -1719,6 +1719,202 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Expense Form Card & Add Expense Styles                            */
+/* ------------------------------------------------------------------ */
+
+.expense-form-section {
+    padding: 3rem 1.5rem 5rem;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    justify-content: center;
+}
+
+.expense-form-container {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.expense-form-header {
+    margin-bottom: 1.5rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.expense-form-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--ink);
+    line-height: 1.2;
+}
+
+.expense-form-subtitle {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    margin-top: 0.35rem;
+}
+
+.expense-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.25rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.required-star {
+    color: var(--danger);
+    font-size: 0.9em;
+}
+
+.label-optional {
+    color: var(--ink-faint);
+    font-weight: 400;
+    font-size: 0.85rem;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.currency-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-prefix {
+    position: absolute;
+    left: 0.9rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.currency-input {
+    padding-left: 2rem !important;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--paper-card);
+}
+
+.form-textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 85px;
+    padding: 0.75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    line-height: 1.5;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--paper-card);
+}
+
+.expense-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-save-expense {
+    flex: 1;
+    margin-top: 0;
+}
+
+.btn-cancel {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.8rem 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    background: var(--paper-card);
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    color: var(--ink);
+    border-color: var(--ink-muted);
+    background: var(--paper);
+}
+
+.profile-header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-add-expense {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-table-add {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
 /* Footer                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -1787,5 +1983,18 @@ a { color: inherit; text-decoration: none; }
     .profile-stats-grid-4 { grid-template-columns: 1fr; }
     .pricing-title {
         font-size: 2rem;
+    }
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+    .expense-card {
+        padding: 1.5rem 1.25rem;
+    }
+    .expense-actions-row {
+        flex-direction: column;
+    }
+    .btn-cancel {
+        width: 100%;
+        text-align: center;
     }
 }

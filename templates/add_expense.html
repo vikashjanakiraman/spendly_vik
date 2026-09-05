@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense — Spendly{% endblock %}
+
+{% block content %}
+<section class="expense-form-section">
+    <div class="expense-form-container">
+
+        <div class="expense-form-header">
+            <a href="{{ url_for('profile') }}" class="back-link">← Back to Dashboard</a>
+            <h1 class="expense-form-title">Add New Expense</h1>
+            <p class="expense-form-subtitle">Record your transaction to keep your spending insights up to date.</p>
+        </div>
+
+        <div class="expense-card">
+            {% if error %}
+            <div class="auth-error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('add_expense') }}" class="expense-form">
+                <div class="form-group">
+                    <label for="title">Expense Title / Description <span class="required-star">*</span></label>
+                    <input type="text" id="title" name="title"
+                           class="form-input" placeholder="e.g. Swiggy Dinner, Groceries, Metro recharge"
+                           value="{{ title or '' }}"
+                           maxlength="100"
+                           required autofocus>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="amount">Amount (₹) <span class="required-star">*</span></label>
+                        <div class="currency-input-wrapper">
+                            <span class="currency-prefix">₹</span>
+                            <input type="number" step="0.01" min="0.01" id="amount" name="amount"
+                                   class="form-input currency-input" placeholder="0.00"
+                                   value="{{ amount or '' }}"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category_id">Category <span class="required-star">*</span></label>
+                        <div class="select-wrapper">
+                            <select id="category_id" name="category_id" class="form-input form-select" required>
+                                <option value="" disabled {% if not category_id %}selected{% endif %}>Select category...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if category_id and category_id|string == cat.id|string %}selected{% endif %}>
+                                    {{ cat.icon }} {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Transaction Date <span class="required-star">*</span></label>
+                    <input type="date" id="date" name="date"
+                           class="form-input"
+                           value="{{ expense_date or today }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes / Merchant Details <span class="label-optional">(optional)</span></label>
+                    <textarea id="notes" name="notes" class="form-input form-textarea" rows="3"
+                              placeholder="e.g. Italian Bistro, paid with UPI, split with Rohit"
+                              maxlength="500">{{ notes or '' }}</textarea>
+                </div>
+
+                <div class="expense-actions-row">
+                    <button type="submit" class="btn-submit btn-save-expense">Save Expense</button>
+                    <a href="{{ url_for('profile') }}" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

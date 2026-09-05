@@ -23,6 +23,11 @@
                     {% endif %}
                 </div>
             </div>
+            <div class="profile-header-actions">
+                <a href="{{ url_for('add_expense') }}" class="btn-submit btn-add-expense">
+                    <span>+</span> Add Expense
+                </a>
+            </div>
         </div>
 
         <!-- Main Profile Nav Tabs -->
@@ -39,6 +44,14 @@
         <!-- TAB 1: TRANSACTION SUMMARY VIEW                               -->
         <!-- ============================================================= -->
         <div id="tab-pane-overview" class="tab-content-pane" style="{% if active_tab == 'settings' %}display: none;{% endif %}">
+
+            {% with messages = get_flashed_messages(category_filter=["expense_success"]) %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert-success">{{ msg }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
             <!-- Date Filter Toolbar Card -->
             <div class="filter-toolbar-card">
@@ -206,11 +219,14 @@
                         <h2 class="profile-card-title">Recent Transactions</h2>
                         <p class="profile-card-subtitle">Complete log of your recorded expenses</p>
                     </div>
-                    {% if recent_expenses %}
-                    <div class="table-search-box">
-                        <input type="text" id="transaction-search" class="form-input search-input" placeholder="🔍 Search expenses..." onkeyup="filterTransactions()">
+                    <div class="table-header-actions">
+                        {% if recent_expenses %}
+                        <div class="table-search-box">
+                            <input type="text" id="transaction-search" class="form-input search-input" placeholder="🔍 Search expenses..." onkeyup="filterTransactions()">
+                        </div>
+                        {% endif %}
+                        <a href="{{ url_for('add_expense') }}" class="btn-submit btn-sm btn-table-add">+ Add Expense</a>
                     </div>
-                    {% endif %}
                 </div>
 
                 {% if recent_expenses %}
@@ -236,7 +252,7 @@
                                     </td>
                                     <td>
                                         <span class="category-pill">
-                                            <span>{{ exp.category_icon or '🏷️' }}</span>
+                                             <span>{{ exp.category_icon or '🏷️' }}</span>
                                             <span>{{ exp.category_name or 'Uncategorized' }}</span>
                                         </span>
                                     </td>
@@ -260,6 +276,8 @@
                         </p>
                         {% if active_range != 'all' %}
                         <a href="{{ url_for('profile', tab='overview') }}" class="btn-submit btn-sm" style="max-width: 180px; margin-top: 0.5rem;">View All Time</a>
+                        {% else %}
+                        <a href="{{ url_for('add_expense') }}" class="btn-submit btn-sm" style="max-width: 200px; margin-top: 0.5rem;">+ Add Your First Expense</a>
                         {% endif %}
                     </div>
                 {% endif %}
